@@ -1,0 +1,368 @@
+using System;
+using Com.Cognizant.MovieCruiser.Model;
+using Com.Cognizant.MovieCruiser.Dao;
+using System.Collections.Generic;
+
+namespace project
+{
+    class Program
+    {
+        static void Main(string[] args)
+        {
+            Console.BackgroundColor = ConsoleColor.White;
+            Console.Clear();
+            Console.ForegroundColor = ConsoleColor.Black;
+            Console.SetCursorPosition(12, 2);
+
+            List<Movie> movies = new List<Movie>();
+
+            List<Movie> favouriteMovieList = new List<Movie>()
+            {
+               new Movie(1,"Avatar","$2787965087","true","15/03/2017","Science Fiction","false"),
+               new Movie(2,"The Avengers","$1518812988","true","23/12/2017","Superhero","false"),
+               new Movie(3,"Titanic","$2187463944","true","21/08/2017","Romance","false")
+            };
+
+            Admin admin = new Admin();
+            Customer customer = new Customer();
+            Dictionary<int, Customer> customerlist = new Dictionary<int, Customer>()
+            {
+                {1,new Customer(1,"Aravind") },
+                {2,new Customer(2,"Vishnu") },
+                {3,new Customer(3,"Rajesh") },
+            };
+        login:
+            Console.WriteLine("Enter 1 to login as admin other number to login as customer");
+            int i = Convert.ToByte(Console.ReadLine());
+            if (i == 1)
+            {
+            adminLogin:
+                Console.WriteLine("Enter Id of admin");
+                admin.AdminId = Console.ReadLine();
+                Console.WriteLine("Enter name of admin");
+                admin.AdminName = Console.ReadLine();
+                if ((admin.AdminId == "Aravind") && (admin.AdminName == "Sikha"))
+                {
+                    Console.WriteLine("Admin Sucessfully Loged In ");
+                adminOptions:
+                    Console.WriteLine("Enter 1 to view movielist ,2 to edit movie,3 to change usertype and 0 to Exit");
+                    int j = Convert.ToByte(Console.ReadLine());
+                    if (j == 3)
+                    {
+                        goto login;
+                    }
+                    if (j == 1)
+                    {
+                        admin.DisplayAdminMovieList();
+                    }
+                    if (j == 2)
+                    {
+                        Console.WriteLine("Enter the Id to Edit Movie details");
+                        int c = Convert.ToByte(Console.ReadLine());
+                        admin.EditMovie(c);
+                        Console.WriteLine("Movie Record Edited succesfully");
+                    }
+                    if (j == 0)
+                    {
+                        Environment.Exit(1);
+                    }
+                    goto adminOptions;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid Credentials");
+                    goto adminLogin;
+                }
+            }
+            else
+            {
+                goto customer;
+            }
+        customer:
+            Console.WriteLine("Enter username of customer");
+            customer.CustomerId = Convert.ToByte(Console.ReadLine());
+            Console.WriteLine("Enter name of customer");
+            customer.CustomerName = Console.ReadLine();
+            if (customer.CustomerId == customerlist[customer.CustomerId].CustomerId && customer.CustomerName == customerlist[customer.CustomerId].CustomerName)
+            {
+                Console.WriteLine("Customer login successfully");
+                Console.WriteLine("MovieList is \n");
+                customer.DisplayCustomerMovieList();
+                List<Movie> favourites = new List<Movie>();
+                favourites.Add(new Movie(1, "Avatar", "$2,787,965,087", "Yes", "15/03/2017", "Science Fiction", "Yes"));
+                Console.WriteLine("Enter an id from movielist to add to favorites");
+                int n = Convert.ToByte(Console.ReadLine());
+                if (n > 3)
+                {
+                    Console.WriteLine("MovieId is not in the list");
+                }
+                else
+                    customer.AddToFavourites(n, movies, favourites);
+                Console.WriteLine("Enter the Id to delete the wanted Movie from Favourites");
+                int p = Convert.ToInt16(Console.ReadLine());
+                customer.RemoveFavourites(p, favourites);
+            }
+            else
+                Console.WriteLine("Invalid Customer credentials");
+        }
+
+    }
+}
+
+-------------------------------------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using Com.Cognizant.MovieCruiser.Model;
+
+
+namespace Com.Cognizant.MovieCruiser.Dao
+{
+    abstract public class user
+    {
+        public List<Movie> movies = new List<Movie>()
+                {
+                   new Movie(1,"Avatar","$2,787,965,087","Yes","15/03/2017","Science Fiction","Yes"),
+                    new Movie(2,"The Avengers","$1,518,812,988","Yes","23/12/2017","Superhero","No"),
+                    new Movie(3,"Titanic","$2,187,463,944","Yes","21/08/2017","Romance","No"),
+                    new Movie(4,"Jurassic World","$1,617,713,208","No","02/07/2017","Science Fiction","Yes"),
+                    new Movie(5,"Avengers","$2,750,760,348","Yes","02/11/2022","Superhero","Yes"),
+            };
+        abstract public List<Movie> GetMovieList();
+    }
+    public class Admin : user
+    {
+        string adminId;
+        public string AdminId
+        {
+            get { return adminId; }
+            set
+            { adminId = value; }
+        }
+        string adminName;
+        public string AdminName
+        {
+            get { return adminName; }
+            set { adminName = value; }
+        }
+        public override List<Movie> GetMovieList()
+        {
+            return movies;
+        }
+        public void DisplayAdminMovieList()
+        {
+            movies = GetMovieList();
+            Console.WriteLine(" Id     Title             BoxOffice        Active       DateOfLaunch        Genre          HasTeaser");
+            int i = 1;
+            foreach (Movie temp in movies)
+            {
+                Console.WriteLine("{0,3}   {1,-18} {2,-6}    {3,-14} {4}    {5,-15}     {6}", i, temp.title, temp.boxoffice, temp.active, temp.dateOfLaunch, temp.genre, temp.hasTeaser);
+                i++;
+            }
+        }
+        public void EditMovie(int mid)
+        {
+            movies = GetMovieList();
+            foreach (Movie temp in movies)
+            {
+                if (temp.id == mid)
+                {
+                    Console.WriteLine("Enter Title");
+                    temp.title = Console.ReadLine();
+                    Console.WriteLine("Enter Active");
+                    temp.active = Console.ReadLine();
+                    Console.WriteLine("Enter Dateoflaunch");
+                    temp.dateOfLaunch = Console.ReadLine();
+                    Console.WriteLine("Enter Genre");
+                    temp.genre = Console.ReadLine();
+                    Console.WriteLine("Enter HasTeaser");
+                    temp.hasTeaser = Console.ReadLine();
+                    Console.WriteLine("Edited Movie Succesfully");
+                }
+            }
+
+        }
+    }
+    public class Customer : user
+    {
+        int customerId;
+        public int CustomerId
+        {
+            get { return customerId; }
+            set { customerId = value; }
+        }
+        string customerName;
+        public string CustomerName
+        {
+            get { return customerName; }
+            set { customerName = value; }
+        }
+        //DEFAULT CONSTRUCTOR
+        public Customer() { }
+        //PARAMETERIZED CONSTRUCTOR
+        public Customer(int CustomerId, string CustomerName)
+        {
+            this.customerId = CustomerId;
+            this.customerName = CustomerName;
+        }
+
+        public override List<Movie> GetMovieList()
+        {
+            return movies;
+        }
+        //DISPLAYING THE ADMIN MOVIE LIST
+        public void DisplayCustomerMovieList()
+        {
+            movies = GetMovieList();
+            int i = 1;
+            Console.WriteLine(" Id     Title             BoxOffice            Genre           HasTeaser");
+            for (int a = 0; a < movies.Count - (2); a++)
+            {
+                Console.WriteLine("{0,3}   {1,-18} {2,-6}    {3,-16}     {4,-2}", i, movies[a].title, movies[a].boxoffice, movies[a].genre, movies[a].hasTeaser);
+                i++;
+            }
+        }
+        //ADD TO FAVOURITES
+        public void AddToFavourites(int id, List<Movie> movies, List<Movie> favourites)
+        {
+            int favId, t = 0, c = 0;
+            string FavTitle;
+            string FavBoxOffice;
+            string FavActive;
+            string FavDateOfLaunch;
+            string FavGenre;
+            string FavHasteaser;
+
+            foreach (Movie temp in movies)
+            {
+                c++;
+                if (temp.id == id)
+                {
+                    foreach (Movie tem in favourites)
+                    {
+                        if (temp.id == tem.id)
+                        {
+                            t = 1;
+                        }
+                    }
+                    if (t == 0)
+                    {
+                        favId = temp.id;
+                        FavTitle = temp.title;
+                        FavBoxOffice = temp.boxoffice;
+                        FavActive = temp.active;
+                        FavDateOfLaunch = temp.dateOfLaunch;
+                        FavGenre = temp.genre;
+                        FavHasteaser = temp.hasTeaser;
+                        favourites.Add(new Movie(favId, FavTitle, FavBoxOffice, FavActive, FavDateOfLaunch, FavGenre, FavHasteaser));
+                        Console.WriteLine("Movie Added to Favorites Succesfully");
+                        Console.WriteLine("The movies list of favourites is");
+                        ViewFavourites(favourites);
+                    }
+                    else
+                    {
+                        Console.WriteLine("The selected movie is already in favourites ");
+                    }
+                }
+            }
+            if (c < id)
+            {
+                Console.WriteLine("Movie index out  bounds");
+            }
+        }
+        public void ViewFavourites(List<Movie> favourites)
+        {
+            Console.WriteLine(" Id     Title             BoxOffice            Genre");
+            int i = 1;
+            foreach (Movie temp in favourites)
+            {
+                Console.WriteLine("{0,3}   {1,-18} {2,-6}    {3,-16}", i, temp.title, temp.boxoffice, temp.genre);
+                i++;
+            }
+        }
+        //REMOVE FAVOURITES
+        public void RemoveFavourites(int id, List<Movie> favourites)
+        {
+            if (favourites.ElementAtOrDefault(id - 1) != null)
+            {
+                favourites.RemoveAt(id - 1);
+                Console.WriteLine("Movie Removed Successfully from favourites");
+                ViewFavourites(favourites);
+            }
+            else
+                Console.WriteLine("No movie found with selected id");
+        }
+    }
+}
+-----------------------------------------------------------------------
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Com.Cognizant.MovieCruiser.Model
+{
+    public class Movie
+    {
+        int Id;
+        public int id
+        {
+            get { return Id; }
+            set { Id = value; }
+        }
+        string Title;
+        public string title
+        {
+            get { return Title; }
+            set { Title = value; }
+        }
+        string BoxOffice;
+        public string boxoffice
+        {
+            get { return BoxOffice; }
+            set { boxoffice = value; }
+        }
+        string Active;
+        public string active
+        {
+            get { return Active; }
+            set { Active = value; }
+        }
+        string DateOfLaunch;
+        public string dateOfLaunch
+        {
+            get { return DateOfLaunch; }
+            set { DateOfLaunch = value; }
+        }
+        string Genre;
+        public string genre
+        {
+            get { return Genre; }
+            set { Genre = value; }
+        }
+        string HasTeaser;
+        public string hasTeaser
+        {
+            get { return HasTeaser; }
+            set { HasTeaser = value; }
+        }
+        //DEFAULT CONSTRUCTOR
+        public Movie() { }
+        //FULLY PARAMATERIZED CONSTRUCTOR
+        public Movie(int Id, string Title, string BoxOffice, string Active, string DateOfLaunch, string Genre, string HasTeaser)
+        {
+            this.Id = Id;
+            this.Title = Title;
+            this.BoxOffice = BoxOffice;
+            this.Active = Active;
+            this.DateOfLaunch = DateOfLaunch;
+            this.Genre = Genre;
+            this.HasTeaser = HasTeaser;
+        }
+    }
+}
+
+
